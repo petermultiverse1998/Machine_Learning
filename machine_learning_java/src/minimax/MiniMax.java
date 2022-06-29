@@ -102,15 +102,21 @@ public class MiniMax {
         }
     }
 
-
-    public int bestAction(){
+    public int bestActionAlphaBetaPruning(){
         List<Integer> rootActions = availableActions.availableActions(rootEncodedState);
         List<Float> scores = new ArrayList<>();
         for (Integer rootAction : rootActions)
             scores.add(minimax(rootEncodedState,-INFINITY,INFINITY,rootAction,false));
         List<Integer> bestActions = bestActions(rootActions,scores);
-//        System.out.println(rootActions);
-//        System.out.println(scores);
+        return bestActions.get(random.nextInt(bestActions.size()));
+    }
+
+    public int bestAction(){
+        List<Integer> rootActions = availableActions.availableActions(rootEncodedState);
+        List<Float> scores = new ArrayList<>();
+        for (Integer rootAction : rootActions)
+            scores.add(minimax(rootEncodedState,rootAction,false));
+        List<Integer> bestActions = bestActions(rootActions,scores);
         return bestActions.get(random.nextInt(bestActions.size()));
     }
     private List<Integer> bestActions(List<Integer> rootActions,List<Float> scores){
