@@ -12,9 +12,8 @@ public class MiniMax {
     private float[] rootEncodedState;
     private AvailableActions availableActions;
     private UpdateState updateState;
-    private UpdateValue updateValue;
-
-    private float breakingReward = -INFINITY;
+    private Reward reward;
+    private MaximizingConditions maximizingConditions;
 
     public MiniMax(){
        rootEncodedState = null;
@@ -30,11 +29,6 @@ public class MiniMax {
         return this;
     }
 
-    public MiniMax setBreakingReward(float breakingReward){
-        this.breakingReward = breakingReward;
-        return this;
-    }
-
     public MiniMax setAvailableActions(AvailableActions availableActions) {
         this.availableActions = availableActions;
         return this;
@@ -45,34 +39,78 @@ public class MiniMax {
         return this;
     }
 
-    public MiniMax setUpdateValue(UpdateValue updateValue) {
-        this.updateValue = updateValue;
+    public MiniMax setUpdateValue(Reward reward) {
+        this.reward = reward;
         return this;
     }
 
-    private float reward(float[] currentEncodedState,int action){
-        float[] newEncodedState = new float[currentEncodedState.length];
-        updateState.updateState(newEncodedState,action,currentEncodedState);
-        List<Integer> actions = availableActions.availableActions(newEncodedState);
-        if(actions.isEmpty()){
-            return updateValue.updateValue(newEncodedState);
-        }
-
-        float reward = INFINITY;
-        for (Integer integer : actions) {
-            reward = Math.min(reward, reward(newEncodedState, integer));
-            if(reward<=breakingReward)
-                break;
-        }
-        return reward;
+    public MiniMax setMaximizingConditions(MaximizingConditions maximizingConditions) {
+        this.maximizingConditions = maximizingConditions;
+        return this;
     }
+
+
+    private float minimax(float[] currentEncodedState, int action,boolean isMaximizing){
+        float[] newEncodedState = updateState.newState(currentEncodedState,action);
+        List<Integer> actions = availableActions.availableActions(newEncodedState);
+        if(actions.isEmpty())
+            return reward.reward(newEncodedState);
+
+        if(isMaximizing){
+            float maxReward = -INFINITY;
+            for (Integer integer : actions) {
+                float reward = minimax(newEncodedState,integer,maximizingConditions.isMaximizing(newEncodedState));
+                maxReward = Math.max(maxReward,reward);
+            }
+            return maxReward;
+        }else{
+            float minReward = INFINITY;
+            for (Integer integer : actions) {
+                float reward = minimax(newEncodedState,integer,maximizingConditions.isMaximizing(newEncodedState));
+                minReward = Math.min(minReward,reward);
+            }
+            return minReward;
+        }
+    }
+
+    private float minimax(float[] currentEncodedState,float alpha,float beta, int action,boolean isMaximizing){
+        float[] newEncodedState = updateState.newState(currentEncodedState,action);
+        List<Integer> actions = availableActions.availableActions(newEncodedState);
+        if(actions.isEmpty())
+            return reward.reward(newEncodedState);
+
+        if(isMaximizing){
+            float maxReward = -INFINITY;
+            for (Integer integer : actions) {
+                float reward = minimax(newEncodedState,alpha,beta,integer,maximizingConditions.isMaximizing(newEncodedState));
+                maxReward = Math.max(maxReward,reward);
+                alpha = Math.max(alpha,reward);
+                if(beta<=alpha)
+                    break;
+            }
+            return maxReward;
+        }else{
+            float minReward = INFINITY;
+            for (Integer integer : actions) {
+                float reward = minimax(newEncodedState,alpha,beta,integer,maximizingConditions.isMaximizing(newEncodedState));
+                minReward = Math.min(minReward,reward);
+                beta = Math.min(beta,reward);
+                if(beta<=alpha)
+                    break;
+            }
+            return minReward;
+        }
+    }
+
 
     public int bestAction(){
         List<Integer> rootActions = availableActions.availableActions(rootEncodedState);
         List<Float> scores = new ArrayList<>();
         for (Integer rootAction : rootActions)
-            scores.add(reward(rootEncodedState,rootAction));
+            scores.add(minimax(rootEncodedState,-INFINITY,INFINITY,rootAction,false));
         List<Integer> bestActions = bestActions(rootActions,scores);
+//        System.out.println(rootActions);
+//        System.out.println(scores);
         return bestActions.get(random.nextInt(bestActions.size()));
     }
     private List<Integer> bestActions(List<Integer> rootActions,List<Float> scores){
@@ -90,17 +128,22 @@ public class MiniMax {
 
     @FunctionalInterface
     public interface UpdateState{
-        void updateState(float[] newEncodedState,int action,float[] currentEncodedState);
+        float[] newState(float[] currentEncodedState, int action);
     }
 
     @FunctionalInterface
-    public interface UpdateValue{
-        float updateValue(float[] currentEncodedState);
+    public interface Reward {
+        float reward(float[] currentEncodedState);
     }
 
     @FunctionalInterface
     public interface AvailableActions{
         List<Integer> availableActions(float[] currentEncodedState);
+    }
+
+    @FunctionalInterface
+    public interface MaximizingConditions{
+        boolean isMaximizing(float[] prevEncodedState);
     }
 
 }

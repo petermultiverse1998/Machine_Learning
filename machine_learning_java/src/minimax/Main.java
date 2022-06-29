@@ -16,9 +16,11 @@ public class Main {
                     actions.add(i);
             return actions;
         });
-        miniMax.setUpdateState((newEncodedState, action, currentEncodedState) -> {
+        miniMax.setUpdateState((currentEncodedState,action) -> {
+            float[] newEncodedState = new float[currentEncodedState.length];
             System.arraycopy(currentEncodedState,0,newEncodedState,0,newEncodedState.length);
             newEncodedState[action] = 1;
+            return newEncodedState;
         });
         miniMax.setUpdateValue(currentEncodedState -> {
             float score = 0;
@@ -29,7 +31,7 @@ public class Main {
             }
             return score;
         });
-
+        miniMax.setMaximizingConditions(currentEncodedState -> true);
 
         int bestAction = miniMax.bestAction();
         System.out.println(bestAction);
