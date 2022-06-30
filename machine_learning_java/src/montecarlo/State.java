@@ -1,6 +1,5 @@
 package montecarlo;
 
-import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +16,7 @@ public class State{
     private int iteration = 0;
     private boolean isTerminal = false;
     public float temperatureParameter = (float) Math.sqrt(2);
+    private float UCB1value = INFINITY;
 
     public State(float... encodedStates){
         //root state
@@ -32,8 +32,7 @@ public class State{
         this.leadingAction = leadingAction;
         childs = new ArrayList<>();
         layer = parent.layer+1;
-        this.encodedStates = new float[parent.encodedStates.length];
-        function.updateState(this.encodedStates,leadingAction, parent.encodedStates,isRollOut);
+        this.encodedStates = function.updateState(parent.encodedStates,leadingAction,isRollOut);
     }
 
     public void setTemperatureParameter(float temperatureParameter) {
@@ -93,14 +92,20 @@ public class State{
             this.parent.update(value);
     }
 
-    public float UCB1(){
+    public float UCB1(float bound){
         if(iteration==0 || this.parent==null)
-            return INFINITY;
-        return (float) ((totalValue/iteration)+temperatureParameter*Math.sqrt(Math.log(this.parent.iteration)/iteration));
+            UCB1value = bound;
+        else
+            UCB1value = (float) ((totalValue/iteration)+temperatureParameter*Math.sqrt(Math.log(this.parent.iteration)/iteration));
+        return UCB1value;
     }
 
     public State maxUCB1Child(){
-        return childs.stream().max((state,state1)->Float.compare(state.UCB1(),state1.UCB1())).orElse(null);
+        return childs.stream().max((state,state1)->Float.compare(state.UCB1(INFINITY),state1.UCB1(INFINITY))).orElse(null);
+    }
+
+    public State minUCB1Child(){
+        return childs.stream().max((state,state1)->Float.compare(state1.UCB1(-INFINITY),state.UCB1(-INFINITY))).orElse(null);
     }
 
     public State firstChild(){
@@ -132,12 +137,11 @@ public class State{
     }
 
     public int bestActionChild(){
-//        State bestChild = childs.stream().max((state,state1)-> Float.compare(state.iteration,state1.iteration)).orElse(null);
-        State bestChild = childs.stream().max((state,state1)-> Float.compare(state.value(),state1.value())).orElse(null);
+        State bestChild = childs.stream().max((state,state1)-> Float.compare(state.iteration,state1.iteration)).orElse(null);
+//        State bestChild = childs.stream().max((state,state1)-> Float.compare(state.value(),state1.value())).orElse(null);
         if(bestChild==null)
             return -1;
         return bestChild.leadingAction;
-//        return maxUCB1Child().leadingAction;
     }
 
     public void removeLowWinningChild(){
@@ -164,7 +168,7 @@ public class State{
         builder.append("[action=").append(leadingAction)
                 .append(", value=").append(totalValue)
                 .append(", iteration=").append(iteration)
-                .append(", UCB1=").append(UCB1())
+                .append(", UCB1=").append(UCB1value)
                 .append(", player=").append(encodedStates[0])
                 .append("]\n");
         for (State child:childs){

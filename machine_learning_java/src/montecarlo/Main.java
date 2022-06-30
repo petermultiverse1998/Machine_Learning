@@ -17,9 +17,11 @@ public class Main {
                     actions.add(i);
             return actions;
         });
-        monteCarlo.setUpdateState((newEncodedState, action, currentEncodedState,isRollOut) -> {
-            System.arraycopy(currentEncodedState,0,newEncodedState,0,newEncodedState.length);
+        monteCarlo.setUpdateState((currentEncodedState,action,isRollOut) -> {
+            float[] newEncodedState = new float[currentEncodedState.length];
+            System.arraycopy(currentEncodedState,0,newEncodedState,0,currentEncodedState.length);
             newEncodedState[action] = 1;
+            return newEncodedState;
         });
         monteCarlo.setRollOutAction(currentEncodedState -> {
             List<Integer> actions = new ArrayList<>();
@@ -37,9 +39,10 @@ public class Main {
             }
             return score;
         });
+        monteCarlo.setMaximizingConditions(currentEncodedState -> true);
 
 
-        int bestAction = monteCarlo.bestAction(1000);
+        int bestAction = monteCarlo.bestAction(100);
         System.out.println(monteCarlo);
         System.out.println(bestAction);
     }

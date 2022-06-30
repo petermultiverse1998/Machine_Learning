@@ -9,8 +9,9 @@ public class MonteCarlo{
     private State root;
     private AvailableActions availableActions;
     private UpdateState updateState;
-    private UpdateValue updateValue;
+    private Reward reward;
     private RollOutAction rollOutAction;
+    private MaximizingConditions maximizingConditions;
 
     public MonteCarlo(){
         root = null;
@@ -21,8 +22,6 @@ public class MonteCarlo{
     }
 
     public MonteCarlo init(float...encodeStates){
-//        if(root!=null)
-//            root.removeAllChilds();
         root = new State(encodeStates);
         return this;
     }
@@ -42,14 +41,24 @@ public class MonteCarlo{
         return this;
     }
 
-    public MonteCarlo setUpdateValue(UpdateValue updateValue) {
-        this.updateValue = updateValue;
+    public MonteCarlo setUpdateValue(Reward reward) {
+        this.reward = reward;
         return this;
     }
 
     public MonteCarlo setRollOutAction(RollOutAction rollOutAction) {
         this.rollOutAction = rollOutAction;
         return this;
+    }
+
+    public MonteCarlo setMaximizingConditions(MaximizingConditions maximizingConditions) {
+        this.maximizingConditions = maximizingConditions;
+        return this;
+    }
+
+    public void adjustRoot(int...actionsPerformed){
+        for (int action : actionsPerformed)
+            root = root.child(action);
     }
 
     public int bestAction(int totalIteration) {
@@ -61,177 +70,16 @@ public class MonteCarlo{
                 //non leaf state
                 //SELECTION
                 //Select child with maximum UCB
-                currentState = currentState.maxUCB1Child();
-                //continue;
-            }
-
-            //leaf state
-            //check if state is sampled?
-            if (currentState.isSampled() || currentState.isRoot()) {
-                //either not sampled or root node
-                //EXPAND for each available actions
-                if(!currentState.isTerminal()){
-                    //not terminal state
-                    List<Integer> actions = availableActions.availableActions(currentState.encodeStates());
-                    currentState.expand(updateState,actions);
-                    //Select the first child
-                    currentState = currentState.firstChild();
-                }
-            }
-
-            //already sampled
-            //ROLLOUT
-            float value = rollout(currentState);
-
-            //BACK PROPAGATION
-            currentState.update(value);
-
-            //System.out.println(root);
-
-            //assign current state to root state
-            currentState = root;
-        }
-        return root.bestActionChild();
-    }
-
-    public int bestActionSingleExpansion(int totalIteration) {
-        //ROOT SELECTION
-        State currentState = root;
-        while (root.iteration() < totalIteration) {
-            //check if state is leaf?
-            if (!currentState.isLeafNode()) {
-                //non leaf state
-                //SELECTION
-                //Select child with maximum UCB
-                currentState = currentState.maxUCB1Child();
-                //continue;
-            }
-
-            //leaf state
-            //check if state is sampled?
-//            if (currentState.isSampled() || currentState.isRoot()) {
-            if (currentState.isSampled() && currentState.isRoot()) {
-//            if (currentState.isSampled()) {
-                //either not sampled or root node
-                //EXPAND for each available actions
-                if(!currentState.isTerminal()){
-                    //not terminal state
-                    List<Integer> actions = availableActions.availableActions(currentState.encodeStates());
-                    currentState.expand(updateState,actions);
-                    //Select the first child
-                    currentState = currentState.firstChild();
-                }
-            }
-
-            //already sampled
-            //ROLLOUT
-            float value = rollout(currentState);
-
-            //BACK PROPAGATION
-            currentState.update(value);
-
-            //System.out.println(root);
-
-            //assign current state to root state
-            currentState = root;
-        }
-        return root.bestActionChild();
-    }
-
-    public int bestActionWithoutUCB(int totalIteration) {
-        //ROOT SELECTION
-        State currentState = root;
-        int turn = 0;
-        int totalActions = 1;
-        int count = 0;
-        float rate = 0.5f;
-        int subIteration = (int) (rate*totalIteration);
-        float subCount = 0;
-        while (root.iteration() < totalIteration) {
-            count++;
-            subCount++;
-            //check if state is leaf?
-            if (!currentState.isLeafNode()) {
-                //non leaf state
-                //SELECTION
-                //Select child with maximum UCB
-//                currentState = currentState.maxUCB1Child();
-                turn = (turn+1)%totalActions;
-                currentState = currentState.childs().get(turn);
-                //continue;
-            }
-
-            //leaf state
-            //check if state is sampled?
-//            if (currentState.isSampled() || currentState.isRoot()) {
-            if (currentState.isSampled() && currentState.isRoot()) {
-//            if (currentState.isSampled()) {
-                //either not sampled or root node
-                //EXPAND for each available actions
-                if(!currentState.isTerminal()){
-                    //not terminal state
-                    List<Integer> actions = availableActions.availableActions(currentState.encodeStates());
-                    if(actions.size()==1)
-                        return actions.get(0);
-                    totalActions = actions.size();
-                    currentState.expand(updateState,actions);
-                    //Select the first child
-                    currentState = currentState.firstChild();
-                }
-            }
-
-            //already sampled
-            //ROLLOUT
-            float value = rollout(currentState);
-
-            //BACK PROPAGATION
-            currentState.update(value);
-
-            //System.out.println(root);
-
-            //assign current state to root state
-            currentState = root;
-
-            if(count>=totalIteration)
-                break;
-            if(subCount>=subIteration){
-                int requiredSurvive = (int) Math.ceil(0.5*totalActions);
-                while (totalActions>requiredSurvive) {
-                    root.removeLowWinningChild();
-                    totalActions--;
-                    if(totalActions==1)
-                        break;
-                }
-                if(root.childs().size()==1)
-                    break;
-                subCount=0;
-                subIteration = (int) (rate*subIteration);
-            }
-
-
-        }
-        return root.bestActionChild();
-    }
-
-    public int bestActionTime(int totalTimeInMillis) {
-        long t0 = System.currentTimeMillis();
-
-        //ROOT SELECTION
-        State currentState = root;
-        while ((System.currentTimeMillis()-t0) < totalTimeInMillis) {
-            //check if state is leaf?
-            if (!currentState.isLeafNode()) {
-                //non leaf state
-                //SELECTION
-                //Select child with maximum UCB
-                currentState = currentState.maxUCB1Child();
+                if(maximizingConditions.isMaximizing(currentState.encodeStates()))
+                    currentState = currentState.maxUCB1Child();
+                else
+                    currentState = currentState.minUCB1Child();
                 continue;
             }
 
             //leaf state
             //check if state is sampled?
             if (currentState.isSampled() || currentState.isRoot()) {
-//            if (currentState.isSampled()) {
                 //either not sampled or root node
                 //EXPAND for each available actions
                 if(!currentState.isTerminal()){
@@ -250,7 +98,7 @@ public class MonteCarlo{
             //BACK PROPAGATION
             currentState.update(value);
 
-            //System.out.println(root);
+//            System.out.println(root);
 
             //assign current state to root state
             currentState = root;
@@ -276,7 +124,7 @@ public class MonteCarlo{
                 newState = new State(newState, selectedAction, updateState,true);
             }
         }
-        return updateValue.updateValue(newState.encodeStates());
+        return reward.reward(newState.encodeStates());
     }
 
     @Override
@@ -292,12 +140,12 @@ public class MonteCarlo{
 
     @FunctionalInterface
     public interface UpdateState{
-        void updateState(float[] newEncodedState,int action,float[] currentEncodedState,boolean isRollOut);
+        float[] updateState(float[] currentEncodedState,int action,boolean isRollOut);
     }
 
     @FunctionalInterface
-    public interface UpdateValue{
-        float updateValue(float[] currentEncodedState);
+    public interface Reward {
+        float reward(float[] currentEncodedState);
     }
 
     @FunctionalInterface
@@ -308,6 +156,11 @@ public class MonteCarlo{
     @FunctionalInterface
     public interface RollOutAction{
         int rollOutAction(float[] currentEncodedState);
+    }
+
+    @FunctionalInterface
+    public interface MaximizingConditions{
+        boolean isMaximizing(float[] currentEncodedState);
     }
 
 
