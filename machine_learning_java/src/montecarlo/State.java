@@ -169,7 +169,7 @@ public class State{
                 .append(", value=").append(totalValue)
                 .append(", iteration=").append(iteration)
                 .append(", UCB1=").append(UCB1value)
-                .append(", player=").append(encodedStates[0])
+//                .append(", player=").append(encodedStates[0])
                 .append("]\n");
         for (State child:childs){
             builder.append("   ".repeat(layer));

@@ -22,7 +22,9 @@ public class MonteCarlo{
     }
 
     public MonteCarlo init(float...encodeStates){
-        root = new State(encodeStates);
+        float[] tempState = new float[encodeStates.length];
+        System.arraycopy(encodeStates,0,tempState,0,tempState.length);
+        root = new State(tempState);
         return this;
     }
 
