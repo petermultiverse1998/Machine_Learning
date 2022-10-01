@@ -17,7 +17,6 @@ public class Main {
         float[][] x = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
         float[][] y = {{0}, {1}, {1}, {0}};
 
-
         Network network = new Network()
                 .addLayer(new Hidden(2,2).setLearningRate(0.01f))
                 .addLayer(new Sigmoid())
@@ -32,7 +31,7 @@ public class Main {
             System.out.println("epoch "+(epoch+1)+":"+network.getLoss());
         }
 //
-        network.save("data/ann");
+//        network.save("data/ann");
 //////
 //        network = new Network("data/ann");
         System.out.println(network);
