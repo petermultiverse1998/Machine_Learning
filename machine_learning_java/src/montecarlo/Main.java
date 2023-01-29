@@ -4,11 +4,16 @@ import neat.Genome;
 import neat.NEAT;
 import neat.NeatGraphics;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class Main {
+    private static record State(float[] boards) implements Serializable {
+        
+    }
+
     public static void main(String[] args) throws InterruptedException {
         MonteCarlo monteCarlo = new MonteCarlo(0,0,0,0);
         monteCarlo.setAvailableActions(currentEncodedState -> {
