@@ -1,8 +1,6 @@
 package montecarlo;
 
-import neat.Genome;
-import neat.NEAT;
-import neat.NeatGraphics;
+import tools.EncoderDecoder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,39 +8,41 @@ import java.util.List;
 import java.util.Random;
 
 public class Main {
-    private static record State(float[] boards) implements Serializable {
-        
-    }
+    record StateHolder(int[] board) implements Serializable{}
 
     public static void main(String[] args) throws InterruptedException {
-        MonteCarlo monteCarlo = new MonteCarlo(0,0,0,0);
+        int[] board = new int[]{0,0,0,0};
+
+        MonteCarlo monteCarlo = new MonteCarlo(EncoderDecoder.encode(new StateHolder(board)));
         monteCarlo.setAvailableActions(currentEncodedState -> {
-            if(currentEncodedState[3]==1)
+            StateHolder stateHolder =(StateHolder) EncoderDecoder.decode(currentEncodedState);
+            if(stateHolder.board[3]==1)
                 return new ArrayList<>();
 
             List<Integer> actions = new ArrayList<>();
-            for (int i = 0; i < currentEncodedState.length; i++)
-                if(currentEncodedState[i]==0)
+            for (int i = 0; i < stateHolder.board.length; i++)
+                if(stateHolder.board[i]==0)
                     actions.add(i);
             return actions;
         });
         monteCarlo.setUpdateState((currentEncodedState,action,isRollOut) -> {
-            float[] newEncodedState = new float[currentEncodedState.length];
-            System.arraycopy(currentEncodedState,0,newEncodedState,0,currentEncodedState.length);
-            newEncodedState[action] = 1;
-            return newEncodedState;
+            StateHolder stateHolder =(StateHolder) EncoderDecoder.decode(currentEncodedState);
+            stateHolder.board[action] = 1;
+            return EncoderDecoder.encode(stateHolder);
         });
         monteCarlo.setRollOutAction(currentEncodedState -> {
+            StateHolder stateHolder =(StateHolder) EncoderDecoder.decode(currentEncodedState);
             List<Integer> actions = new ArrayList<>();
-            for (int i = 0; i < currentEncodedState.length; i++)
-                if(currentEncodedState[i]==0)
+            for (int i = 0; i < stateHolder.board.length; i++)
+                if(stateHolder.board[i]==0)
                     actions.add(i);
             return actions.get(new Random().nextInt(actions.size()));
         });
         monteCarlo.setUpdateValue(currentEncodedState -> {
+            StateHolder stateHolder =(StateHolder) EncoderDecoder.decode(currentEncodedState);
             float score = 0;
-            if(currentEncodedState[3]==1){
-                for(float f:currentEncodedState)
+            if(stateHolder.board[3]==1){
+                for(float f:stateHolder.board)
                     if(f==0)
                         score++;
             }
@@ -51,7 +51,7 @@ public class Main {
         monteCarlo.setMaximizingConditions(currentEncodedState -> true);
 
 
-        int bestAction = monteCarlo.bestAction(100);
+        int bestAction = monteCarlo.bestAction(1000);
         System.out.println(monteCarlo);
         System.out.println(bestAction);
 

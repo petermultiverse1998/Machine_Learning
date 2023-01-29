@@ -9,7 +9,7 @@ public class MiniMax {
 
     public static final Random random = new Random();
 
-    private float[] rootEncodedState;
+    private byte[] rootEncodedState;
     private AvailableActions availableActions;
     private UpdateState updateState;
     private Reward reward;
@@ -19,12 +19,12 @@ public class MiniMax {
        rootEncodedState = null;
     }
 
-    public MiniMax(float...encodeStates){
+    public MiniMax(byte...encodeStates){
         init(encodeStates);
     }
 
-    public MiniMax init(float...encodeStates){
-        rootEncodedState = new float[encodeStates.length];
+    public MiniMax init(byte...encodeStates){
+        rootEncodedState = new byte[encodeStates.length];
         System.arraycopy(encodeStates,0, rootEncodedState,0, rootEncodedState.length);
         return this;
     }
@@ -50,8 +50,8 @@ public class MiniMax {
     }
 
 
-    private float minimax(float[] currentEncodedState, int action,boolean isMaximizing){
-        float[] newEncodedState = updateState.newState(currentEncodedState,action);
+    private float minimax(byte[] currentEncodedState, int action,boolean isMaximizing){
+        byte[] newEncodedState = updateState.newState(currentEncodedState,action);
         List<Integer> actions = availableActions.availableActions(newEncodedState);
         if(actions.isEmpty())
             return reward.reward(newEncodedState);
@@ -73,8 +73,8 @@ public class MiniMax {
         }
     }
 
-    private float minimax(float[] currentEncodedState,float alpha,float beta, int action,boolean isMaximizing){
-        float[] newEncodedState = updateState.newState(currentEncodedState,action);
+    private float minimax(byte[] currentEncodedState,float alpha,float beta, int action,boolean isMaximizing){
+        byte[] newEncodedState = updateState.newState(currentEncodedState,action);
         List<Integer> actions = availableActions.availableActions(newEncodedState);
         if(actions.isEmpty())
             return reward.reward(newEncodedState);
@@ -134,22 +134,22 @@ public class MiniMax {
 
     @FunctionalInterface
     public interface UpdateState{
-        float[] newState(float[] currentEncodedState, int action);
+        byte [] newState(byte[] currentEncodedState, int action);
     }
 
     @FunctionalInterface
     public interface Reward {
-        float reward(float[] currentEncodedState);
+        float reward(byte[] currentEncodedState);
     }
 
     @FunctionalInterface
     public interface AvailableActions{
-        List<Integer> availableActions(float[] currentEncodedState);
+        List<Integer> availableActions(byte[] currentEncodedState);
     }
 
     @FunctionalInterface
     public interface MaximizingConditions{
-        boolean isMaximizing(float[] prevEncodedState);
+        boolean isMaximizing(byte[] prevEncodedState);
     }
 
 }

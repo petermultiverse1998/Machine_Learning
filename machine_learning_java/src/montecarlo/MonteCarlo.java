@@ -17,12 +17,12 @@ public class MonteCarlo{
         root = null;
     }
 
-    public MonteCarlo(float...encodeStates){
+    public MonteCarlo(byte...encodeStates){
         init(encodeStates);
     }
 
-    public MonteCarlo init(float...encodeStates){
-        float[] tempState = new float[encodeStates.length];
+    public MonteCarlo init(byte...encodeStates){
+        byte[] tempState = new byte[encodeStates.length];
         System.arraycopy(encodeStates,0,tempState,0,tempState.length);
         root = new State(tempState);
         return this;
@@ -142,27 +142,27 @@ public class MonteCarlo{
 
     @FunctionalInterface
     public interface UpdateState{
-        float[] updateState(float[] currentEncodedState,int action,boolean isRollOut);
+        byte[] updateState(byte[] currentEncodedState,int action,boolean isRollOut);
     }
 
     @FunctionalInterface
     public interface Reward {
-        float reward(float[] currentEncodedState);
+        float reward(byte[] currentEncodedState);
     }
 
     @FunctionalInterface
     public interface AvailableActions{
-        List<Integer> availableActions(float[] currentEncodedState);
+        List<Integer> availableActions(byte[] currentEncodedState);
     }
 
     @FunctionalInterface
     public interface RollOutAction{
-        int rollOutAction(float[] currentEncodedState);
+        int rollOutAction(byte[] currentEncodedState);
     }
 
     @FunctionalInterface
     public interface MaximizingConditions{
-        boolean isMaximizing(float[] currentEncodedState);
+        boolean isMaximizing(byte[] currentEncodedState);
     }
 
 

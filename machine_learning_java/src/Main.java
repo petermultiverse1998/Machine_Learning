@@ -1,5 +1,7 @@
 public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello world!");
+    public static void main(String[] args) throws InterruptedException {
+//       montecarlo.Main.main(args);
+//       minimax.Main.main(args);
+//       neat.Main.main(args);
     }
 }

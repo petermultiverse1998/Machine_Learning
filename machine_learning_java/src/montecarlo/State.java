@@ -10,7 +10,7 @@ public class State{
     private final int leadingAction;
     private final List<State> childs;
     private final int layer;//for printing purpose
-    private final float[] encodedStates;
+    private final byte[] encodedStates;
 
     private float totalValue = 0f;
     private int iteration = 0;
@@ -18,7 +18,7 @@ public class State{
     public float temperatureParameter = (float) Math.sqrt(2);
     private float UCB1value = INFINITY;
 
-    public State(float... encodedStates){
+    public State(byte... encodedStates){
         //root state
         parent = null;
         leadingAction = -1;
@@ -132,7 +132,7 @@ public class State{
         return totalValue;
     }
 
-    public float[] encodeStates() {
+    public byte[] encodeStates() {
         return encodedStates;
     }
 
