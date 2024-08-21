@@ -18,9 +18,9 @@ public class Main {
         float[][] y = {{0}, {1}, {1}, {0}};
 
         Network network = new Network()
-                .addLayer(new Hidden(2,2).setLearningRate(0.01f))
+                .addLayer(new Hidden(2,3).setLearningRate(0.01f))
                 .addLayer(new Sigmoid())
-                .addLayer(new Hidden(2,1).setLearningRate(0.02f))
+                .addLayer(new Hidden(3,1).setLearningRate(0.02f))
                 .addLayer(new Sigmoid())
 //                .addConnection(0,2,new Hidden(2,2))
                 //.forceLearningRate(0.1f)

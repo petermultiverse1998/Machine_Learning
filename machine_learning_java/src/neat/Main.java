@@ -17,16 +17,16 @@ public class Main {
 //            System.out.println(i+" : "+fittest.forward(1,i)[0]);
 //        }
 
-        System.out.println(" : "+fittest.forward(1,0,0)[0]);
-        System.out.println(" : "+fittest.forward(1,1,0)[0]);
-        System.out.println(" : "+fittest.forward(1,0,1)[0]);
-        System.out.println(" : "+fittest.forward(1,1,1)[0]);
+        System.out.println(" : "+fittest.forward(0,0)[0]);
+        System.out.println(" : "+fittest.forward(1,0)[0]);
+        System.out.println(" : "+fittest.forward(0,1)[0]);
+        System.out.println(" : "+fittest.forward(1,1)[0]);
 
     }
 
     static class Neat extends NEAT {
         public Neat() {
-            super(1000, 3, 1, 10, true, false, true);
+            super(1000, 2, 1, 10, true, false, true);
         }
 
         @Override
@@ -36,14 +36,14 @@ public class Main {
 //                float f = genome.forward(1, i)[0];
 //                error += (3 * i*i + 1 - f) * (3 * i*i + 1 - f);
 //            }
-            float f = genome.forward(1,0,0)[0];
+            float f = genome.forward(0,0)[0];
             error += (0- f) * (0 - f);
-            f = genome.forward(1,1,0)[0];
+            f = genome.forward(1,0)[0];
             error += (1- f) * (1 - f);
-            f = genome.forward(1,1,1)[0];
+            f = genome.forward(0,1)[0];
+            error += (1- f) * (1 - f);
+            f = genome.forward(1,1)[0];
             error += (0- f) * (0 - f);
-            f = genome.forward(1,0,1)[0];
-            error += (1- f) * (1 - f);
             return -error;
         }
     }

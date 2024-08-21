@@ -3,5 +3,6 @@ public class Main {
 //       montecarlo.Main.main(args);
 //       minimax.Main.main(args);
 //       neat.Main.main(args);
+       ann.Main.main(args);
     }
 }
